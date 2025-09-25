@@ -16,28 +16,17 @@ class BuildRepository extends ServiceEntityRepository
         parent::__construct($registry, Build::class);
     }
 
-    //    /**
-    //     * @return Build[] Returns an array of Build objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('b')
-    //            ->andWhere('b.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('b.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function getLatestBuildForTag(int $versionId, string $tag): ?Build
+    {
+        return $this->createQueryBuilder('b')
+            ->andWhere('b.version = :versionId')
+            ->andWhere('b.tag = :tag')
+            ->setParameter('versionId', $versionId)
+            ->setParameter('tag', $tag)
+            ->orderBy('b.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 
-    //    public function findOneBySomeField($value): ?Build
-    //    {
-    //        return $this->createQueryBuilder('b')
-    //            ->andWhere('b.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
 }

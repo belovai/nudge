@@ -7,6 +7,7 @@ namespace App\Entity;
 use App\Repository\BuildRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: BuildRepository::class)]
 #[ORM\Table(name: 'builds')]
@@ -31,6 +32,13 @@ class Build
     #[ORM\ManyToOne(inversedBy: 'builds')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Version $version = null;
+
+    #[Groups(['build:public'])]
+    public string $displayVersion {
+        get {
+            return $this->version->getVersion().'-'.$this->tag.'.'.$this->revision;
+        }
+    }
 
     public function __construct(string $tag, int $revision, ?array $context = null)
     {
