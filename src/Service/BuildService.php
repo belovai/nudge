@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Service;
@@ -28,6 +29,7 @@ class BuildService
         }
 
         $latestBuild = $this->buildRepository->getLatestBuildForTag($version->getId(), $dto->tag);
+
         return $this->bumpRevision($version, $dto, $latestBuild ? $latestBuild->getRevision() + 1 : 1);
     }
 

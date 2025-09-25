@@ -28,5 +28,4 @@ class BuildRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
-
 }
