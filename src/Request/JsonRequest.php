@@ -15,9 +15,13 @@ readonly class JsonRequest
     ) {
     }
 
-    public function denormalize(string $class): object
+    public function denormalize(string $class, bool $allowNull = false): object
     {
         $data = json_decode($this->request->getCurrentRequest()->getContent(), true);
+
+        if ($allowNull && $data === null) {
+            return new $class();
+        }
 
         if (json_last_error() !== JSON_ERROR_NONE) {
             throw new \InvalidArgumentException('Invalid JSON data');

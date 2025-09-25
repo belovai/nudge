@@ -20,11 +20,11 @@ class Project
 
     #[ORM\Id]
     #[ORM\Column(type: 'string', unique: true)]
-    #[Groups(['project:public'])]
-    private Uuid $uuid;
+    #[Groups(['project:public', 'version:public'])]
+    private string $uuid;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['project:public'])]
+    #[Groups(['project:public', 'version:public'])]
     private string $name;
 
     /**
@@ -35,14 +35,14 @@ class Project
 
     public function __construct(string $name)
     {
-        $this->uuid = Uuid::v4();
+        $this->uuid = Uuid::v4()->toRfc4122();
         $this->name = $name;
         $this->versions = new ArrayCollection();
     }
 
     public function getUuid(): string
     {
-        return $this->uuid->toRfc4122();
+        return $this->uuid;
     }
 
     public function getName(): ?string

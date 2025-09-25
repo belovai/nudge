@@ -18,6 +18,18 @@ class VersionRepository extends ServiceEntityRepository
         parent::__construct($registry, Version::class);
     }
 
+    public function getCurrentVersion(string $projectUuid): ?Version
+    {
+        return $this->createQueryBuilder('v')
+            ->andWhere('v.project = :projectUuid')
+            ->setParameter('projectUuid', $projectUuid)
+            ->orderBy('v.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    }
+
     //    /**
     //     * @return Version[] Returns an array of Version objects
     //     */

@@ -7,8 +7,11 @@ namespace App\Entity;
 use App\Repository\VersionRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: VersionRepository::class)]
 #[ORM\Table(name: 'versions')]
@@ -23,13 +26,21 @@ class Version
 
     #[ORM\ManyToOne(inversedBy: 'versions')]
     #[ORM\JoinColumn(referencedColumnName: 'uuid', nullable: false)]
+    #[Groups(['version:public'])]
     private ?Project $project = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['version:public', 'version:created'])]
     private string $version;
 
     #[ORM\Column(type: 'json', nullable: true)]
+    #[Groups(['version:public', 'version:created'])]
     private ?array $context;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Gedmo\Timestampable(on: 'create')]
+    #[Groups(['version:public'])]
+    protected $createdAt;
 
     /**
      * @var Collection<int, Build>
