@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: ProjectRepository::class)]
@@ -18,14 +19,12 @@ class Project
     use TimestampableEntity;
 
     #[ORM\Id]
-    #[ORM\Column(type: 'uuid', unique: true)]
-    private Uuid $uuid {
-        get {
-            return $this->uuid;
-        }
-    }
+    #[ORM\Column(type: 'string', unique: true)]
+    #[Groups(['project:public'])]
+    private Uuid $uuid;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['project:public'])]
     private string $name;
 
     /**
@@ -39,6 +38,11 @@ class Project
         $this->uuid = Uuid::v4();
         $this->name = $name;
         $this->versions = new ArrayCollection();
+    }
+
+    public function getUuid(): string
+    {
+        return $this->uuid->toRfc4122();
     }
 
     public function getName(): ?string
