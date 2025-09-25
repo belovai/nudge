@@ -21,7 +21,7 @@ final class ProjectController extends AbstractController
     ) {
     }
 
-    #[Route('/projects', name: 'app_projects', methods: ['POST'])]
+    #[Route('/projects', name: 'app_projects_store', methods: ['POST'])]
     public function store(): JsonResponse
     {
         $dto = $this->jsonRequest->denormalize(CreateProjectDto::class);
