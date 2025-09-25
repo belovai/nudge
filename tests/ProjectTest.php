@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests;
 
 use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
 use PHPUnit\Framework\Attributes\Test;
 
-class CreateProjectTest extends ApiTestCase
+class ProjectTest extends ApiTestCase
 {
     #[Test]
     public function successfulProjectCreation(): void
