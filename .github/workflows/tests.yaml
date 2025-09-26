@@ -1,0 +1,51 @@
+name: Tests
+
+on:
+  pull_request:
+    branches:
+      - "**"
+  push:
+    branches:
+      - "main"
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: "Run tests"
+
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Install PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: intl, zip, zlib, bcmath, ctype, fileinfo, json, mbstring, openssl, tokenizer, xml
+          coverage: none
+          ini-values: memory_limit=-1
+
+      - name: "Setup Composer Cache"
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.composer/cache
+            vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+
+      - name: "Set up environment"
+        run: cp .env.test .env
+
+      - name: "Run composer install"
+        run: composer install --prefer-dist --no-interaction --no-progress --no-suggest
+
+      - name: Run tests
+        run: |
+          php bin/console --env=test doctrine:database:create
+          php bin/console --env=test doctrine:schema:create
+          php bin/phpunit
