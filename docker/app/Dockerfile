@@ -14,7 +14,7 @@ RUN apt-get update && \
     nginx \
     vim
 
-Clear cache
+# Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* && rm -R /var/www/*
 
 WORKDIR /var/www
