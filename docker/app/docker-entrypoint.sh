@@ -20,12 +20,14 @@ case "$1" in
     fpm)
         log "Starting php-fpm only"
         php -v
+        chown -R www-data:www-data /var/www/var
         exec php-fpm -c /var/www/docker/app/php.ini -y /var/www/docker/app/php-fpm.conf
         ;;
 
     app)
         log "Starting app"
         php -v
+        chown -R www-data:www-data /var/www/var
         exec /usr/bin/supervisord -n -c /var/www/docker/app/supervisord.conf
         ;;
 
