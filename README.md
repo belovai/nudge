@@ -200,7 +200,32 @@ to `null`.
 }
 ```
 
-## Installation & Setup
+## Docker
+
+Example compose.yaml configuration:
+
+```yaml
+services:
+    nudge:
+        image: ghcr.io/belovai/nudge:latest
+        ports:
+            - "8000:80"
+        volumes:
+            - ./.env:/var/www/.env
+            - nudge_sqlite:/var/www/var/database/
+volumes:
+    nudge_sqlite:
+        driver: local
+```
+
+Setup commands:
+```bash
+docker compose up -d
+docker compose exec -u www-data nudge php bin/console doctrine:database:create
+docker compose exec -u www-data nudge php bin/console doctrine:migrations:migrate
+```
+
+## Local installation & Setup
 
 1. **Install dependencies:**
    ```bash
@@ -215,7 +240,7 @@ to `null`.
 
 3. **Start the development server:**
    ```bash
-   symfony server:start
+   symfony serve
    ```
 
 ## Testing
