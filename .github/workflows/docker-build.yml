@@ -46,18 +46,20 @@ jobs:
   tag:
     runs-on: ubuntu-latest
     needs: prepare
+    permissions:
+      contents: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        
+
       - name: Check if tag exists
         id: tag_exists
         run: |
           TAG=${{ needs.prepare.outputs.app_version }}
           if git rev-parse "refs/tags/$TAG" >/dev/null 2>&1; then
-            echo "::set-output name=exists::true"
+            echo "exists=true" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=exists::false"
+            echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Create Tag
