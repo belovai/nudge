@@ -1,0 +1,109 @@
+name: 'Docker Build'
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Base version of the build (x.x.x)'
+        default: ''
+        required: true
+        type: string
+
+concurrency:
+  group: stage-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prepare:
+    name: Prepare Dev Build
+    runs-on: ubuntu-latest
+    outputs:
+      app_version: ${{ steps.show-version.outputs.version }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Get Version
+        id: version
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: "https://nudge.belovai.com/api/${{ secrets.NUDGE_UUID }}/${{ inputs.version }}/builds"
+          data: |
+            {
+              "tag": "${{ github.ref_name }}",
+              "context": {
+                "repo": "${{ github.repository }}",
+                "branch": "${{ github.ref_name }}",
+                "actor": "${{ github.actor }}",
+                "hash": "${{ github.sha }}"
+              }
+            }
+
+      - name: Show Response
+        id: show-version
+        run: |
+          echo "version=${{ fromJson(steps.version.outputs.response).data.version }}" >> $GITHUB_OUTPUT
+
+  build-and-push:
+    name: Docker build and push
+    runs-on: ubuntu-latest
+    needs: prepare
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: intl, zip, zlib, bcmath, ctype, fileinfo, json, mbstring, openssl, tokenizer, xml
+          coverage: none
+          ini-values: memory_limit=-1
+
+      - name: Setup Composer Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.composer/cache
+            vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+
+      - name: Set up environment
+        run: cp .env.example .env
+
+      - name: Run composer install
+        run: composer install --prefer-dist --no-interaction --no-progress --no-suggest
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to the GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=latest
+            type=raw,value=${{ needs.prepare.outputs.app_version }}
+
+      - name: Build docker nginx and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./docker/app/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
