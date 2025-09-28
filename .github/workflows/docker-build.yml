@@ -32,10 +32,12 @@ jobs:
           url: "https://nudge.belovai.com/api/${{ secrets.NUDGE_UUID }}/${{ inputs.version }}"
           data: |
             {
+              "context": {
                 "repo": "${{ github.repository }}",
                 "branch": "${{ github.ref_name }}",
                 "actor": "${{ github.actor }}",
                 "hash": "${{ github.sha }}"
+              }
             }
 
       - name: Show Response
