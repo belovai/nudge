@@ -14,8 +14,10 @@ use Symfony\Component\RateLimiter\RateLimiterFactory;
 
 readonly class RateLimiterSubscriber implements EventSubscriberInterface
 {
-    public function __construct(private RateLimiterRegistry $rateLimiterRegistry)
-    {
+    public function __construct(
+        private RateLimiterRegistry $rateLimiterRegistry,
+        private bool $rateLimitingEnabled,
+    ) {
     }
 
     public static function getSubscribedEvents(): array
@@ -27,6 +29,10 @@ readonly class RateLimiterSubscriber implements EventSubscriberInterface
 
     public function onKernelController(ControllerEvent $event): void
     {
+        if (!$this->rateLimitingEnabled) {
+            return;
+        }
+
         $controller = $event->getController();
         if (!is_array($controller)) {
             return;

@@ -4,6 +4,8 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    rate_limiting_enabled: '%env(default:rate_limiting_default:bool:RATE_LIMITING_ENABLED)%'
+    rate_limiting_default: true
 
 services:
     # default configuration for services in *this* file
@@ -39,5 +41,6 @@ services:
     App\EventSubscriber\RateLimiterSubscriber:
         arguments:
             $rateLimiterRegistry: '@App\Service\RateLimiterRegistry'
+            $rateLimitingEnabled: '%rate_limiting_enabled%'
         tags:
             - { name: kernel.event_subscriber }
