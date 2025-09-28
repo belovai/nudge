@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Attribute\RateLimit;
 use App\Dto\CreateProjectDto;
 use App\Request\JsonRequest;
 use App\Service\ProjectService;
@@ -22,6 +23,7 @@ final class ProjectController extends AbstractController
     }
 
     #[Route('/projects', name: 'app_projects_store', methods: ['POST'])]
+    #[RateLimit('create_api')]
     public function store(): JsonResponse
     {
         $dto = $this->jsonRequest->denormalize(CreateProjectDto::class);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Attribute\RateLimit;
 use App\Dto\CreateBuildDto;
 use App\Entity\Version;
 use App\Request\JsonRequest;
@@ -24,6 +25,7 @@ final class BuildController extends AbstractController
     }
 
     #[Route('/{uuid}/{version}/builds', name: 'app_builds_store', methods: ['POST'])]
+    #[RateLimit('bump_api')]
     public function store(
         #[MapEntity(mapping: ['uuid' => 'project', 'version' => 'version'])] Version $version,
     ): JsonResponse {

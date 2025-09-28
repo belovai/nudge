@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Attribute\RateLimit;
 use App\Dto\CreateVersionDto;
 use App\Entity\Project;
 use App\Repository\VersionRepository;
@@ -42,6 +43,7 @@ final class VersionController extends AbstractController
     }
 
     #[Route('/{uuid}/patch', name: 'app_versions_patch', methods: ['POST'])]
+    #[RateLimit('bump_api')]
     public function patch(
         #[MapEntity(mapping: ['uuid' => 'uuid'])] Project $project,
     ): JsonResponse {
@@ -59,6 +61,7 @@ final class VersionController extends AbstractController
     }
 
     #[Route('/{uuid}/minor', name: 'app_versions_minor', methods: ['POST'])]
+    #[RateLimit('bump_api')]
     public function minor(
         #[MapEntity(mapping: ['uuid' => 'uuid'])] Project $project,
     ): JsonResponse {
@@ -76,6 +79,7 @@ final class VersionController extends AbstractController
     }
 
     #[Route('/{uuid}/major', name: 'app_versions_major', methods: ['POST'])]
+    #[RateLimit('bump_api')]
     public function major(
         #[MapEntity(mapping: ['uuid' => 'uuid'])] Project $project,
     ): JsonResponse {

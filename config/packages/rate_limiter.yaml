@@ -1,0 +1,10 @@
+framework:
+    rate_limiter:
+        create_api:
+            policy: 'sliding_window'
+            limit: 5
+            interval: '1 minutes'
+        bump_api:
+            policy: 'sliding_window'
+            limit: 100
+            interval: '1 hours'

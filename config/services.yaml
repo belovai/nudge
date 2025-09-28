@@ -26,3 +26,18 @@ services:
     App\EventListener\NotFoundHttpExceptionListener:
         tags:
             - { name: kernel.event_listener, event: kernel.exception }
+
+    App\EventListener\TooManyRequestsHttpExceptionListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.exception }
+
+    App\Service\RateLimiterRegistry:
+        calls:
+            - [add, ['create_api', '@limiter.create_api']]
+            - [add, ['bump_api', '@limiter.bump_api']]
+
+    App\EventSubscriber\RateLimiterSubscriber:
+        arguments:
+            $rateLimiterRegistry: '@App\Service\RateLimiterRegistry'
+        tags:
+            - { name: kernel.event_subscriber }
