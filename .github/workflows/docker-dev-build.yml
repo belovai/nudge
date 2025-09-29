@@ -1,15 +1,12 @@
-name: 'Docker Build'
+name: 'Docker Dev Build'
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Bump version (major.minor.patch)'
+        description: 'Base version of the build (x.x.x)'
+        default: ''
         required: true
-        type: choice
-        options:
-          - patch
-          - minor
-          - major
+        type: string
 
 concurrency:
   group: stage-build-${{ github.ref }}
@@ -17,7 +14,7 @@ concurrency:
 
 jobs:
   prepare:
-    name: Prepare Build
+    name: Prepare Dev Build
     runs-on: ubuntu-latest
     outputs:
       app_version: ${{ steps.show-version.outputs.version }}
@@ -29,9 +26,10 @@ jobs:
         id: version
         uses: fjogeleit/http-request-action@v1
         with:
-          url: "https://nudge.belovai.com/api/${{ secrets.NUDGE_UUID }}/${{ inputs.version }}"
+          url: "https://nudge.belovai.com/api/${{ secrets.NUDGE_UUID }}/${{ inputs.version }}/builds"
           data: |
             {
+              "tag": "${{ github.ref_name }}",
               "context": {
                 "repo": "${{ github.repository }}",
                 "branch": "${{ github.ref_name }}",
@@ -44,38 +42,6 @@ jobs:
         id: show-version
         run: |
           echo "version=${{ fromJson(steps.version.outputs.response).data.version }}" >> $GITHUB_OUTPUT
-
-  tag:
-    name: Git Tag
-    runs-on: ubuntu-latest
-    needs: prepare
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Check if tag exists
-        id: tag_exists
-        run: |
-          TAG=${{ needs.prepare.outputs.app_version }}
-          if git rev-parse "refs/tags/$TAG" >/dev/null 2>&1; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Create Tag
-        uses: actions/github-script@v6
-        if: steps.tag_exists.outputs.exists == 'false'
-        with:
-          script: |
-            github.rest.git.createRef({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: `refs/tags/${{ needs.prepare.outputs.app_version }}`,
-                sha: context.sha
-            })
 
   build-and-push:
     name: Docker build and push

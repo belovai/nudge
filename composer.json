@@ -26,6 +26,7 @@
         "symfony/maker-bundle": "^1.64",
         "symfony/property-access": "7.3.*",
         "symfony/property-info": "7.3.*",
+        "symfony/rate-limiter": "7.3.*",
         "symfony/routing": "7.3.*",
         "symfony/runtime": "7.3.*",
         "symfony/security-bundle": "7.3.*",
