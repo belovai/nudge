@@ -38,6 +38,7 @@ COPY ./docker/app/docker-entrypoint.sh /docker-entrypoint.sh
 
 COPY ./docker/app/supervisord.conf ./docker/app/supervisord.conf
 
+COPY ./meta.json ./meta.json
 
 RUN chmod +x /docker-entrypoint.sh
 
