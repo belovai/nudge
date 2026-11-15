@@ -29,6 +29,10 @@ services:
         tags:
             - { name: kernel.event_listener, event: kernel.exception }
 
+    App\EventListener\BadRequestHttpExceptionListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.exception }
+
     App\EventListener\TooManyRequestsHttpExceptionListener:
         tags:
             - { name: kernel.event_listener, event: kernel.exception }
