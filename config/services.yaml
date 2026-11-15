@@ -33,6 +33,10 @@ services:
         tags:
             - { name: kernel.event_listener, event: kernel.exception }
 
+    App\EventListener\UniqueConstraintViolationExceptionListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.exception }
+
     App\Service\RateLimiterRegistry:
         calls:
             - [add, ['create_api', '@limiter.create_api']]

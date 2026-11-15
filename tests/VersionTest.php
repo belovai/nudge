@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests;
 
 use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
+use App\Factory\ProjectFactory;
 use App\Factory\VersionFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\Uid\Uuid;
@@ -208,6 +209,27 @@ class VersionTest extends ApiTestCase
         );
 
         $this->assertResponseStatusCodeSame(404);
+        $this->assertJsonContains(['success' => false]);
+    }
+
+    #[Test]
+    public function bumpToAlreadyExistingVersionReturnsConflict(): void
+    {
+        $client = static::createClient();
+        $urlGenerator = $client->getContainer()->get('router');
+
+        // Latest row (by id) is 1.2.3, but 1.2.4 already exists, so a patch bump collides.
+        $project = ProjectFactory::createOne();
+        VersionFactory::createOne(['project' => $project, 'version' => '1.2.4']);
+        VersionFactory::createOne(['project' => $project, 'version' => '1.2.3']);
+
+        $client->request(
+            'POST',
+            $urlGenerator->generate('api_app_versions_patch', ['uuid' => $project->getUuid()]),
+            ['json' => ['context' => ['test' => 'conflict']]]
+        );
+
+        $this->assertResponseStatusCodeSame(409);
         $this->assertJsonContains(['success' => false]);
     }
 }
