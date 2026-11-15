@@ -2,9 +2,10 @@ doctrine:
     dbal:
         url: '%env(resolve:DATABASE_URL)%'
 
-        # IMPORTANT: You MUST configure your server version,
-        # either here or in the DATABASE_URL env var (see .env file)
-        #server_version: '16'
+        # Without it DBAL connects to the database just to detect the platform, which
+        # breaks the prod cache warmup in CI (no database there). 3.45 is the SQLite of
+        # the Ubuntu noble image; override with ?serverVersion= in DATABASE_URL if needed.
+        server_version: '3.45'
 
         profiling_collect_backtrace: '%kernel.debug%'
         use_savepoints: true
