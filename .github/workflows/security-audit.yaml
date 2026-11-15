@@ -1,0 +1,42 @@
+name: Security Audit
+
+# New advisories show up without any change in this repo, so besides PRs and main
+# this also runs daily against the committed composer.lock.
+on:
+  pull_request:
+    branches:
+      - "**"
+  push:
+    branches:
+      - "main"
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  composer-audit:
+    name: Composer audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          coverage: none
+          tools: composer:v2
+
+      # Reads composer.lock only; nothing is installed. Fails on any advisory.
+      # Abandoned packages are reported, not failed: doctrine/common is abandoned
+      # but has no replacement while API Platform depends on it.
+      - name: Audit composer.lock
+        run: composer audit --locked --abandoned=report
