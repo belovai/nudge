@@ -11,9 +11,12 @@ on:
           - minor
           - major
 
+# Own group per workflow, so a dev build can't cancel a release.
+# No cancel-in-progress: the version is already bumped in Nudge when the build starts,
+# so cancelling a running release would burn a version. A newer run waits instead.
 concurrency:
-  group: stage-build-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   prepare:
@@ -48,7 +51,8 @@ jobs:
   tag:
     name: Git Tag
     runs-on: ubuntu-latest
-    needs: prepare
+    # Tag only a version whose image was actually built and pushed.
+    needs: [prepare, build-and-push]
     permissions:
       contents: write
     steps:

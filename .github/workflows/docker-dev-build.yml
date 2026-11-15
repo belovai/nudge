@@ -8,8 +8,10 @@ on:
         required: true
         type: string
 
+# Own group per workflow, so a dev build can't cancel a release.
+# A newer dev build of the same branch supersedes a running one.
 concurrency:
-  group: stage-build-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
