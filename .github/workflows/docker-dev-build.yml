@@ -71,13 +71,18 @@ jobs:
           path: |
             ~/.composer/cache
             vendor
-          key: composer-${{ hashFiles('composer.lock') }}
+          # Separate from the Tests cache, which holds dev dependencies.
+          key: composer-nodev-${{ hashFiles('composer.lock') }}
 
       - name: Set up environment
         run: cp .env.example .env
 
       - name: Run composer install
-        run: composer install --prefer-dist --no-interaction --no-progress --no-suggest
+        # No dev dependencies in the image. APP_ENV=prod so the post-install cache:clear
+        # doesn't try to boot dev-only bundles that are not installed.
+        env:
+          APP_ENV: prod
+        run: composer install --no-dev --optimize-autoloader --prefer-dist --no-interaction --no-progress
 
       - name: Set up meta.json
         run: |
