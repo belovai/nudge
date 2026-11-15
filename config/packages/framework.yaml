@@ -2,6 +2,11 @@
 framework:
     secret: '%env(APP_SECRET)%'
 
+    # Comma-separated IPs/CIDRs of reverse proxies whose X-Forwarded-* headers are trusted
+    # (e.g. "10.42.0.0/16" for the k3s pod network, or "REMOTE_ADDR", "PRIVATE_SUBNETS").
+    # Empty: no proxy is trusted and the client IP is the TCP peer.
+    trusted_proxies: '%env(default::TRUSTED_PROXIES)%'
+
     # Note that the session will be started ONLY if you read or write from it.
     session: true
 

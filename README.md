@@ -225,6 +225,57 @@ docker compose exec -u www-data nudge php bin/console doctrine:database:create
 docker compose exec -u www-data nudge php bin/console doctrine:migrations:migrate
 ```
 
+## Running behind a proxy
+
+Rate limiting is per client IP. Behind a reverse proxy, load balancer or CDN, every request reaches the app from the
+proxy's address, so all clients would share a single limit. Tell the app which proxies it may trust to report the
+real client IP:
+
+| Variable           | Example            | Meaning                                                                                                     |
+|--------------------|--------------------|-------------------------------------------------------------------------------------------------------------|
+| `TRUSTED_PROXIES`  | `192.168.0.10`     | Comma-separated IPs/CIDRs of trusted proxies. The keywords `PRIVATE_SUBNETS` and `REMOTE_ADDR` also work.   |
+| `CLIENT_IP_HEADER` | `CF-Connecting-IP` | Optional. Header holding the real client IP, used only when the request comes from a trusted proxy.         |
+
+Both are empty by default: no proxy is trusted and the client IP is the TCP peer.
+
+### How the client IP is resolved
+
+- **Only `TRUSTED_PROXIES` set** — the standard way. The client IP is read from `X-Forwarded-For`, skipping the
+  trusted proxies from the right. Works with nginx, Caddy, HAProxy, Traefik, etc., as long as each proxy in the chain
+  appends to `X-Forwarded-For` and every one of them is listed.
+- **`CLIENT_IP_HEADER` set as well** — the client IP is taken from that single header instead. Use it when the edge
+  proxy (usually a CDN) sends the client IP in its own header, or when a proxy in the middle overwrites
+  `X-Forwarded-For` (e.g. Traefik with no `forwardedHeaders.trustedIPs`), so the original IP only survives in the
+  edge's header.
+
+A header from a peer that isn't in `TRUSTED_PROXIES`, or one that doesn't hold a valid IP, is ignored.
+
+### Cloudflare
+
+Cloudflare always sets `CF-Connecting-IP` to the visitor's IP and overwrites any value the visitor sent, which makes it
+the most reliable source:
+
+```dotenv
+CLIENT_IP_HEADER=CF-Connecting-IP
+```
+
+What goes into `TRUSTED_PROXIES` depends on how Cloudflare reaches the app:
+
+- **Proxied DNS record (orange cloud)** — requests come from Cloudflare's edge, so trust its published ranges
+  (<https://www.cloudflare.com/ips/>), plus your own proxy if there is one in between. Firewall the origin so only
+  Cloudflare can reach it; otherwise anyone can bypass Cloudflare and send their own header.
+- **Cloudflare Tunnel** — requests come from `cloudflared`, which runs next to the app. Trust the address it connects
+  from, e.g. `127.0.0.1`, the Docker network, or `PRIVATE_SUBNETS`. The origin has no open port, so there is nothing
+  to bypass from outside.
+
+Other CDNs have similar headers (for example `True-Client-IP` or `Fastly-Client-IP`); the same setting applies.
+
+### Security
+
+Anyone who can reach the app from a trusted address can claim any client IP and so dodge the rate limit. Trust only
+proxies that clients can't go around, and avoid `REMOTE_ADDR` (trust every peer) unless the app is not reachable
+except through the proxy.
+
 ## Local installation & Setup
 
 1. **Install dependencies:**

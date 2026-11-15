@@ -6,6 +6,9 @@
 parameters:
     rate_limiting_enabled: '%env(default:rate_limiting_default:bool:RATE_LIMITING_ENABLED)%'
     rate_limiting_default: true
+    # Header carrying the real client IP set by the edge proxy, e.g. "CF-Connecting-IP".
+    # Only honoured when the request comes from a proxy listed in TRUSTED_PROXIES.
+    client_ip_header: '%env(default::CLIENT_IP_HEADER)%'
 
 services:
     # default configuration for services in *this* file
