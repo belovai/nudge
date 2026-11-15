@@ -5,9 +5,11 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
-    # Staying on the 7.4 LTS line on purpose; a major Symfony upgrade is a manual decision.
+    # Major versions are upgraded deliberately, not by bot (e.g. DBAL 3 -> 4 is a
+    # migration; staying on the Symfony 7.4 LTS line is a choice). Minor/patch updates
+    # still come weekly, and security updates are not affected by this rule.
     ignore:
-      - dependency-name: "symfony/*"
+      - dependency-name: "*"
         update-types: ["version-update:semver-major"]
     # One PR per family instead of one per package (Symfony alone is ~40 packages).
     groups:
