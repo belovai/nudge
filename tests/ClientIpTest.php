@@ -64,7 +64,7 @@ class ClientIpTest extends ApiTestCase
         }
 
         (new ClientIpHeaderSubscriber($headerName))->onKernelRequest(
-            new RequestEvent($this->createMock(HttpKernelInterface::class), $request, HttpKernelInterface::MAIN_REQUEST)
+            new RequestEvent($this->createStub(HttpKernelInterface::class), $request, HttpKernelInterface::MAIN_REQUEST)
         );
 
         $this->assertSame($expectedIp, $request->getClientIp());
