@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests;
 
-use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
 use App\EventSubscriber\ClientIpHeaderSubscriber;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -12,7 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
-class ClientIpTest extends ApiTestCase
+class ClientIpTest extends JsonApiTestCase
 {
     private const PROXY = '10.42.0.5';
 
@@ -78,14 +77,14 @@ class ClientIpTest extends ApiTestCase
         $this->setEnv('RATE_LIMITING_ENABLED', 'true');
 
         $client = static::createClient();
-        $client->getKernelBrowser()->setServerParameter('REMOTE_ADDR', self::PROXY);
+        $client->setServerParameter('REMOTE_ADDR', self::PROXY);
         $url = $client->getContainer()->get('router')->generate('api_app_projects_store');
 
         // Unique per run: the limiter state lives in the test cache between runs.
         $clientA = sprintf('2001:db8::%x:%x', random_int(1, 0xFFFF), random_int(1, 0xFFFF));
         $clientB = sprintf('2001:db8::%x:%x', random_int(1, 0xFFFF), random_int(1, 0xFFFF));
 
-        $create = fn (string $ip) => $client->request('POST', $url, [
+        $create = fn (string $ip) => $this->jsonRequest($client, 'POST', $url, [
             'headers' => ['CF-Connecting-IP' => $ip],
             'json' => ['name' => 'rate limit test'],
         ]);

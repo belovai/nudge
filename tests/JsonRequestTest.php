@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Tests;
 
-use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
 use App\Factory\VersionFactory;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 
-class JsonRequestTest extends ApiTestCase
+class JsonRequestTest extends JsonApiTestCase
 {
     public static function bodies(): iterable
     {
@@ -54,13 +53,13 @@ class JsonRequestTest extends ApiTestCase
             'build' => $urlGenerator->generate('api_app_builds_store', ['uuid' => $uuid, 'version' => '1.0.0']),
         };
 
-        $response = $client->request('POST', $url, [
+        $response = $this->jsonRequest($client, 'POST', $url, [
             'headers' => ['Content-Type' => 'application/json'],
             'body' => $body,
         ]);
 
         $this->assertResponseStatusCodeSame($expectedStatus);
-        $data = json_decode($response->getContent(false), true);
+        $data = json_decode($response->getContent(), true);
         $this->assertSame($expectedStatus < 300, $data['success']);
 
         if ($errorField !== null) {

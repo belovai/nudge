@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests;
 
-use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
 use App\Factory\ProjectFactory;
 use App\Factory\VersionFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\Uid\Uuid;
 
-class VersionTest extends ApiTestCase
+class VersionTest extends JsonApiTestCase
 {
     #[Test]
     public function checkCurrentVersion(): void
@@ -21,7 +20,8 @@ class VersionTest extends ApiTestCase
         $version = VersionFactory::createOne(['version' => '2.1.5']);
 
         // Get current version
-        $response = $client->request(
+        $response = $this->jsonRequest(
+            $client,
             'GET',
             $urlGenerator->generate('api_app_versions_show', ['uuid' => $version->getProject()->getUuid()])
         );
@@ -44,7 +44,8 @@ class VersionTest extends ApiTestCase
         $version = VersionFactory::createOne(['version' => '1.2.3']);
 
         // Bump patch version
-        $response = $client->request(
+        $response = $this->jsonRequest(
+            $client,
             'POST',
             $urlGenerator->generate('api_app_versions_patch', ['uuid' => $version->getProject()->getUuid()]),
             [
@@ -74,7 +75,8 @@ class VersionTest extends ApiTestCase
         $version = VersionFactory::createOne(['version' => '1.2.3']);
 
         // Bump minor version
-        $response = $client->request(
+        $response = $this->jsonRequest(
+            $client,
             'POST',
             $urlGenerator->generate('api_app_versions_minor', ['uuid' => $version->getProject()->getUuid()]),
             [
@@ -104,7 +106,8 @@ class VersionTest extends ApiTestCase
         $version = VersionFactory::createOne(['version' => '1.2.3']);
 
         // Bump major version
-        $response = $client->request(
+        $response = $this->jsonRequest(
+            $client,
             'POST',
             $urlGenerator->generate('api_app_versions_major', ['uuid' => $version->getProject()->getUuid()]),
             [
@@ -134,7 +137,8 @@ class VersionTest extends ApiTestCase
         VersionFactory::createOne(['version' => '1.2.3']);
 
         $nonExistingUuid = Uuid::v4()->toRfc4122();
-        $client->request(
+        $this->jsonRequest(
+            $client,
             'GET',
             $urlGenerator->generate('api_app_versions_show', ['uuid' => $nonExistingUuid])
         );
@@ -152,7 +156,8 @@ class VersionTest extends ApiTestCase
         VersionFactory::createOne(['version' => '1.2.3']);
 
         $nonExistingUuid = Uuid::v4()->toRfc4122();
-        $client->request(
+        $this->jsonRequest(
+            $client,
             'POST',
             $urlGenerator->generate('api_app_versions_patch', ['uuid' => $nonExistingUuid]),
             [
@@ -175,7 +180,8 @@ class VersionTest extends ApiTestCase
         VersionFactory::createOne(['version' => '1.2.3']);
 
         $nonExistingUuid = Uuid::v4()->toRfc4122();
-        $client->request(
+        $this->jsonRequest(
+            $client,
             'POST',
             $urlGenerator->generate('api_app_versions_minor', ['uuid' => $nonExistingUuid]),
             [
@@ -198,7 +204,8 @@ class VersionTest extends ApiTestCase
         VersionFactory::createOne(['version' => '1.2.3']);
 
         $nonExistingUuid = Uuid::v4()->toRfc4122();
-        $client->request(
+        $this->jsonRequest(
+            $client,
             'POST',
             $urlGenerator->generate('api_app_versions_major', ['uuid' => $nonExistingUuid]),
             [
@@ -223,7 +230,8 @@ class VersionTest extends ApiTestCase
         VersionFactory::createOne(['project' => $project, 'version' => '1.2.4']);
         VersionFactory::createOne(['project' => $project, 'version' => '1.2.3']);
 
-        $client->request(
+        $this->jsonRequest(
+            $client,
             'POST',
             $urlGenerator->generate('api_app_versions_patch', ['uuid' => $project->getUuid()]),
             ['json' => ['context' => ['test' => 'conflict']]]
