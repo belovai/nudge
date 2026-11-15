@@ -8,6 +8,7 @@ use App\Dto\CreateVersionDto;
 use App\Entity\Project;
 use App\Entity\Version;
 use App\Exception\ValidationException;
+use App\Repository\ProjectRepository;
 use App\Repository\VersionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -18,6 +19,7 @@ class VersionService
         private readonly EntityManagerInterface $entityManager,
         private readonly ValidatorInterface $validator,
         private readonly VersionRepository $versionRepository,
+        private readonly ProjectRepository $projectRepository,
     ) {
     }
 
@@ -34,62 +36,38 @@ class VersionService
 
     public function bumpPatch(Project $project, CreateVersionDto $dto): Version
     {
-        $errors = $this->validator->validate($dto);
-        if (count($errors) > 0) {
-            throw new ValidationException($errors);
-        }
-        $currentVersion = $this->versionRepository->getCurrentVersion($project->getUuid());
-
-        $version = new Version(
-            $this->bump($currentVersion, 'patch'),
-            $dto->context
-        );
-        $version->setProject($project);
-
-        $this->entityManager->persist($version);
-        $this->entityManager->flush();
-
-        return $version;
+        return $this->createNextVersion($project, $dto, 'patch');
     }
 
     public function bumpMinor(Project $project, CreateVersionDto $dto): Version
     {
-        $errors = $this->validator->validate($dto);
-        if (count($errors) > 0) {
-            throw new ValidationException($errors);
-        }
-        $currentVersion = $this->versionRepository->getCurrentVersion($project->getUuid());
-
-        $version = new Version(
-            $this->bump($currentVersion, 'minor'),
-            $dto->context
-        );
-        $version->setProject($project);
-
-        $this->entityManager->persist($version);
-        $this->entityManager->flush();
-
-        return $version;
+        return $this->createNextVersion($project, $dto, 'minor');
     }
 
     public function bumpMajor(Project $project, CreateVersionDto $dto): Version
+    {
+        return $this->createNextVersion($project, $dto, 'major');
+    }
+
+    private function createNextVersion(Project $project, CreateVersionDto $dto, string $part): Version
     {
         $errors = $this->validator->validate($dto);
         if (count($errors) > 0) {
             throw new ValidationException($errors);
         }
-        $currentVersion = $this->versionRepository->getCurrentVersion($project->getUuid());
 
-        $version = new Version(
-            $this->bump($currentVersion, 'major'),
-            $dto->context
-        );
-        $version->setProject($project);
+        // Lock first, then read the current version, so two concurrent bumps can't compute the same next version.
+        return $this->entityManager->wrapInTransaction(function () use ($project, $dto, $part): Version {
+            $this->projectRepository->lockForUpdate($project);
 
-        $this->entityManager->persist($version);
-        $this->entityManager->flush();
+            $currentVersion = $this->versionRepository->getCurrentVersion($project->getUuid());
 
-        return $version;
+            $version = new Version($this->bump($currentVersion, $part), $dto->context);
+            $version->setProject($project);
+            $this->entityManager->persist($version);
+
+            return $version;
+        });
     }
 
     private function bump(Version $version, string $part): string

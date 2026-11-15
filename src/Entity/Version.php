@@ -15,6 +15,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: VersionRepository::class)]
 #[ORM\Table(name: 'versions')]
+#[ORM\UniqueConstraint(name: 'uniq_versions_project_version', columns: ['project_id', 'version'])]
 class Version
 {
     use TimestampableEntity;

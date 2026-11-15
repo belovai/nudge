@@ -11,6 +11,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: BuildRepository::class)]
 #[ORM\Table(name: 'builds')]
+#[ORM\UniqueConstraint(name: 'uniq_builds_version_tag_revision', columns: ['version_id', 'tag', 'revision'])]
 class Build
 {
     use TimestampableEntity;
