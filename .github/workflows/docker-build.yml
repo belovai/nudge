@@ -26,11 +26,11 @@ jobs:
       app_version: ${{ steps.show-version.outputs.version }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Get Version
         id: version
-        uses: fjogeleit/http-request-action@v1
+        uses: fjogeleit/http-request-action@v2
         with:
           url: "https://nudge.belovai.com/api/${{ secrets.NUDGE_UUID }}/${{ inputs.version }}"
           data: |
@@ -57,7 +57,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Check if tag exists
         id: tag_exists
@@ -70,7 +70,7 @@ jobs:
           fi
 
       - name: Create Tag
-        uses: actions/github-script@v6
+        uses: actions/github-script@v9
         if: steps.tag_exists.outputs.exists == 'false'
         with:
           script: |
@@ -91,7 +91,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install PHP
         uses: shivammathur/setup-php@v2
@@ -102,7 +102,7 @@ jobs:
           ini-values: memory_limit=-1
 
       - name: Setup Composer Cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.composer/cache
@@ -135,10 +135,10 @@ jobs:
           EOF
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Log in to the GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -146,7 +146,7 @@ jobs:
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
@@ -154,7 +154,7 @@ jobs:
             type=raw,value=${{ needs.prepare.outputs.app_version }}
 
       - name: Build docker nginx and push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ./docker/app/Dockerfile
