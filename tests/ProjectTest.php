@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests;
 
-use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
 use PHPUnit\Framework\Attributes\Test;
 
-class ProjectTest extends ApiTestCase
+class ProjectTest extends JsonApiTestCase
 {
     #[Test]
     public function successfulProjectCreation(): void
@@ -15,7 +14,8 @@ class ProjectTest extends ApiTestCase
         $client = static::createClient();
         $urlGenerator = $client->getContainer()->get('router');
 
-        $response = $client->request(
+        $response = $this->jsonRequest(
+            $client,
             'POST',
             $urlGenerator->generate('api_app_projects_store'),
             [
@@ -39,7 +39,8 @@ class ProjectTest extends ApiTestCase
         $client = static::createClient();
         $urlGenerator = $client->getContainer()->get('router');
 
-        $response = $client->request(
+        $response = $this->jsonRequest(
+            $client,
             'POST',
             $urlGenerator->generate('api_app_projects_store'),
             [
@@ -64,7 +65,8 @@ class ProjectTest extends ApiTestCase
         $client = static::createClient();
         $urlGenerator = $client->getContainer()->get('router');
 
-        $client->request(
+        $this->jsonRequest(
+            $client,
             'POST',
             $urlGenerator->generate('api_app_projects_store'),
             [
@@ -83,7 +85,8 @@ class ProjectTest extends ApiTestCase
         $client = static::createClient();
         $urlGenerator = $client->getContainer()->get('router');
 
-        $client->request(
+        $this->jsonRequest(
+            $client,
             'POST',
             $urlGenerator->generate('api_app_projects_store'),
             [
@@ -104,7 +107,8 @@ class ProjectTest extends ApiTestCase
 
         $longName = str_repeat('a', 256); // 256 characters, exceeds 255 limit
 
-        $client->request(
+        $this->jsonRequest(
+            $client,
             'POST',
             $urlGenerator->generate('api_app_projects_store'),
             [
@@ -123,7 +127,8 @@ class ProjectTest extends ApiTestCase
         $client = static::createClient();
         $urlGenerator = $client->getContainer()->get('router');
 
-        $client->request(
+        $this->jsonRequest(
+            $client,
             'POST',
             $urlGenerator->generate('api_app_projects_store'),
             [
@@ -143,7 +148,8 @@ class ProjectTest extends ApiTestCase
         $client = static::createClient();
         $urlGenerator = $client->getContainer()->get('router');
 
-        $client->request(
+        $this->jsonRequest(
+            $client,
             'POST',
             $urlGenerator->generate('api_app_projects_store'),
             [
@@ -165,7 +171,8 @@ class ProjectTest extends ApiTestCase
 
         $maxLengthName = str_repeat('a', 255); // Exactly 255 characters
 
-        $response = $client->request(
+        $response = $this->jsonRequest(
+            $client,
             'POST',
             $urlGenerator->generate('api_app_projects_store'),
             [
@@ -189,7 +196,8 @@ class ProjectTest extends ApiTestCase
         $client = static::createClient();
         $urlGenerator = $client->getContainer()->get('router');
 
-        $response = $client->request(
+        $response = $this->jsonRequest(
+            $client,
             'POST',
             $urlGenerator->generate('api_app_projects_store'),
             [

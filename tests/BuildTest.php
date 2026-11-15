@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Tests;
 
-use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
 use App\Factory\VersionFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\Uid\Uuid;
 
-class BuildTest extends ApiTestCase
+class BuildTest extends JsonApiTestCase
 {
     #[Test]
     public function createBuildForVersion(): void
@@ -19,7 +18,8 @@ class BuildTest extends ApiTestCase
 
         $version = VersionFactory::createOne(['version' => '1.0.0']);
 
-        $response = $client->request(
+        $response = $this->jsonRequest(
+            $client,
             'POST',
             $urlGenerator->generate('api_app_builds_store', [
                 'uuid' => $version->getProject()->getUuid(),
@@ -52,7 +52,8 @@ class BuildTest extends ApiTestCase
 
         $version = VersionFactory::createOne(['version' => '2.1.0']);
 
-        $response1 = $client->request(
+        $response1 = $this->jsonRequest(
+            $client,
             'POST',
             $urlGenerator->generate('api_app_builds_store', [
                 'uuid' => $version->getProject()->getUuid(),
@@ -72,7 +73,8 @@ class BuildTest extends ApiTestCase
         $this->assertEquals('2.1.0-beta.1', $data1['data']['version']);
 
         // Create second build with same tag - should increment revision
-        $response2 = $client->request(
+        $response2 = $this->jsonRequest(
+            $client,
             'POST',
             $urlGenerator->generate('api_app_builds_store', [
                 'uuid' => $version->getProject()->getUuid(),
@@ -101,7 +103,8 @@ class BuildTest extends ApiTestCase
         $version = VersionFactory::createOne(['version' => '1.5.3']);
 
         // Create build with 'alpha' tag
-        $response1 = $client->request(
+        $response1 = $this->jsonRequest(
+            $client,
             'POST',
             $urlGenerator->generate('api_app_builds_store', [
                 'uuid' => $version->getProject()->getUuid(),
@@ -121,7 +124,8 @@ class BuildTest extends ApiTestCase
         $this->assertEquals('1.5.3-alpha.1', $data1['data']['version']);
 
         // Create build with 'rc' tag - should start from revision 1
-        $response2 = $client->request(
+        $response2 = $this->jsonRequest(
+            $client,
             'POST',
             $urlGenerator->generate('api_app_builds_store', [
                 'uuid' => $version->getProject()->getUuid(),
@@ -150,7 +154,8 @@ class BuildTest extends ApiTestCase
         $version = VersionFactory::createOne(['version' => '0.9.0']);
 
         // Create a build without context
-        $response = $client->request(
+        $response = $this->jsonRequest(
+            $client,
             'POST',
             $urlGenerator->generate('api_app_builds_store', [
                 'uuid' => $version->getProject()->getUuid(),
@@ -181,7 +186,8 @@ class BuildTest extends ApiTestCase
 
         // Try to create a build for a non-existing project
         $nonExistingUuid = Uuid::v4()->toRfc4122();
-        $client->request(
+        $this->jsonRequest(
+            $client,
             'POST',
             $urlGenerator->generate('api_app_builds_store', ['uuid' => $nonExistingUuid, 'version' => '1.0.0']),
             [
@@ -205,7 +211,8 @@ class BuildTest extends ApiTestCase
         $version = VersionFactory::createOne(['version' => '1.0.0']);
 
         // Try to create a build for a non-existing version
-        $response = $client->request(
+        $response = $this->jsonRequest(
+            $client,
             'POST',
             $urlGenerator->generate('api_app_builds_store', [
                 'uuid' => $version->getProject()->getUuid(),
